@@ -9,9 +9,11 @@ class Variable:
         self.data = data
         self.grad = None
         self.creator = None
+        self.generation = 0 # 세대 수를 기록하는 변수
     
     def set_creator(self, func):
         self.creator = func
+        self.generation = func.generation + 1 # 세대를 기록한다(부모 세대 + 1)
     
     def cleargrad(self):
         self.grad = None
@@ -20,7 +22,17 @@ class Variable:
         if self.grad is None:
             self.grad = np.ones_like(self.data)
         
-        funcs = [self.creator]
+        funcs = []
+        seen_set = set()
+
+        def add_func(f):
+            if f not in seen_set:
+                funcs.append(f)
+                seen_set.add(f)
+                funcs.sort(key=lambda x: x.generation)
+        
+        add_func(self.creator)
+
         while funcs:
             f = funcs.pop() # 함수를 가져온다
             gys = [output.grad for output in f.outputs]
@@ -35,7 +47,7 @@ class Variable:
                     x.grad = x.grad + gx
 
                 if x.creator is not None:
-                    funcs.append(x.creator) # 하나 앞의 함수를 리스트에 추가
+                    add_func(x.creator) # 하나 앞의 함수를 리스트에 추가
 
 class Function:
     def __call__(self, *inputs):
@@ -44,7 +56,8 @@ class Function:
         if not isinstance(ys, tuple): # 튜플이 아닌 경우 추가 지원
             ys = (ys, )
         outputs = [Variable(as_array(y)) for y in ys]
-
+        
+        self.generation = max([x.generation for x in inputs])
         for output in outputs:
             output.set_creator(self) # 출력 변수에 창조자를 설정
         self.inputs = inputs # 입력 변수를 기억(보관)
@@ -105,9 +118,10 @@ def as_array(x):
         return np.array(x)
     return x
 
-x = Variable(np.array(3.0))
-y = add(x, x)
-print('y', y.data)
-
+x = Variable(np.array(2.0))
+a = square(x)
+y = add(square(a), square(a))
 y.backward()
-print('x.grad', x.grad)
+
+print(y.data)
+print(x.grad)
