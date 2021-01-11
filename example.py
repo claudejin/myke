@@ -1,5 +1,8 @@
 import numpy as np
+import math
+
 from myke import Variable
+from myke.utils import plot_dot_graph
 
 def sphere(x, y):
     z = x ** 2 + y ** 2
@@ -37,3 +40,22 @@ z.backward()
 
 print("Goldstein-Price", z)
 print(x.grad, y.grad)
+
+def my_sin(x, threshold=0.0001):
+    y = 0
+    for i in range(100000):
+        c = (-1) ** i / math.factorial(2 * i + 1)
+        t = c * x ** (2 * i + 1)
+        y = y + t
+        if abs(t.data) < threshold:
+            break
+    return y
+
+x = Variable(np.array(np.pi/4))
+y = my_sin(x, 1e-15)
+y.backward()
+
+print(y.data)
+print(x.grad)
+
+plot_dot_graph(y, True)
