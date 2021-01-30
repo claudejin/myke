@@ -16,5 +16,8 @@ else:
     from myke.core import as_array
     from myke.core import as_variable
     from myke.core import setup_variable
+    from myke.core import Parameter
+    from myke.layers import Layer
+    from myke.models import Model
 
 setup_variable()
