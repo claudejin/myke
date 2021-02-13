@@ -1,27 +1,28 @@
 import math
 import numpy as np
 import myke
-from myke import datasets
+from myke.datasets import Spiral
+from myke import DataLoader
 from myke import optimizers
 from myke.models import MLP
 import myke.functions as F
 import matplotlib.pyplot as plt
 
 # Hyperparameter settings
-max_epoch = 3000
-batch_size = 60
+max_epoch = 10
+batch_size = 10
 lr = 0.4
 
 # Data
-train_set = datasets.Spiral()
-#plt.scatter(x[:,0], x[:,1], c=t)
-#plt.show()
+train_set = Spiral(train=True)
+test_set = Spiral(train=False)
+train_loader = DataLoader(train_set, batch_size)
+test_loader = DataLoader(test_set, batch_size, shuffle=False)
+
 model = MLP((10, 10, 3))
 optimizer = optimizers.MomentumSGD(lr, momentum=0.8).setup(model)
 
-data_size = len(train_set)
-max_iter = math.ceil(data_size / batch_size)
-
+"""
 def draw_model():
     # Plot boundary area the model predict
     h = 0.01
@@ -47,29 +48,38 @@ def draw_model():
     plt.draw()
     plt.pause(0.01)
     plt.clf()
+"""
 
 for epoch in range(max_epoch):
-    index = np.random.permutation(data_size)
-    sum_loss = 0
+    sum_loss, sum_acc = 0, 0
 
-    for i in range(max_iter):
-        # Mini batch
-        batch_index = index[i * batch_size:(i + 1) * batch_size]
-        batch = [train_set[i] for i in batch_index]
-        batch_x = np.array([example[0] for example in batch])
-        batch_t = np.array([example[1] for example in batch])
+    for x, t in train_loader: # Batch iter
+        y = model(x)
+        loss = F.softmax_cross_entropy_simple(y, t)
+        acc = F.accuracy(y, t)
 
-        y = model(batch_x)
-        loss = F.softmax_cross_entropy_simple(y, batch_t)
-        
         model.cleargrads()
         loss.backward()
         optimizer.update()
 
-        sum_loss += float(loss.data) * len(batch_t)
+        sum_loss += float(loss.data) * len(t)
+        sum_acc += float(acc.data) * len(t)
+
+    print(f"epoch {epoch+1}")
+    print(f"train loss {sum_loss / len(train_set):.4f}, accuracy {sum_acc / len(train_set):.4f}")
     
-    # Print progress every epoch
-    avg_loss = sum_loss / data_size
-    print(f"epoch {epoch+1}, loss {avg_loss:.6f}")
-    if epoch % 250 == 0:
-        draw_model()
+    sum_loss, sum_acc = 0, 0
+    with myke.no_grad():
+        for x, t in test_loader:
+            y = model(x)
+            loss = F.softmax_cross_entropy_simple(y, t)
+            acc = F.accuracy(y, t)
+
+            sum_loss += float(loss.data) * len(t)
+            sum_acc += float(acc.data) * len(t)
+        
+    print(f"test loss {sum_loss / len(test_set):.4f}, accuracy {sum_acc / len(test_set):.4f}")
+
+    # if epoch % 250 == 0:
+    #    draw_model()
+    

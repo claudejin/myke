@@ -1,7 +1,9 @@
 import numpy as np
+from myke import Variable
 from myke import Function
 from myke import utils
 from myke import as_variable
+from myke import as_array
 
 class Square(Function):
     def forward(self, x):
@@ -307,3 +309,11 @@ def softmax_cross_entropy_simple(x, t):
     tlog_p = log_p[np.arange(N), t.data]
     y = -1 * sum(tlog_p) / N
     return y
+
+def accuracy(y, t):
+    y, t = as_variable(y), as_variable(t)
+
+    pred = y.data.argmax(axis=1).reshape(t.shape)
+    result = (pred == t.data)
+    acc = result.mean()
+    return Variable(as_array(acc))

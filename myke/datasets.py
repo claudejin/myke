@@ -10,8 +10,8 @@ class Dataset:
         if self.target_transform is None:
             self.target_transform = lambda x: x
 
-        self.data = None
-        self.label = None
+        self.data = []
+        self.label = []
         self.prepare()
     
     def __getitem__(self, index):

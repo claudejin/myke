@@ -19,5 +19,6 @@ else:
     from myke.core import Parameter
     from myke.layers import Layer
     from myke.models import Model
+    from myke.dataloaders import DataLoader
 
 setup_variable()
