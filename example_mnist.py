@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import myke
 from myke import datasets
@@ -16,6 +17,9 @@ test_loader = DataLoader(test_set, batch_size, shuffle=False)
 
 model = MLP((1000, 10), activation=F.relu)
 optimizer = optimizers.MomentumSGD().setup(model)
+
+if os.path.exists('my_mnist.npz'):
+    model.load_weights('my_mnist.npz')
 
 for epoch in range(max_epoch):
     sum_loss, sum_acc = 0, 0
@@ -46,3 +50,5 @@ for epoch in range(max_epoch):
             sum_acc += float(acc.data) * len(t)
         
     print(f"test loss {sum_loss / len(test_set):.4f}, accuracy {sum_acc / len(test_set):.4f}")
+
+model.save_weights('my_mnist.npz')
