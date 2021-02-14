@@ -11,8 +11,10 @@ if is_simple_core:
 else:
     from myke.core import Variable
     from myke.core import Function
+    from myke.core import Config
     from myke.core import using_config
     from myke.core import no_grad
+    from myke.core import test_mode
     from myke.core import as_array
     from myke.core import as_variable
     from myke.core import setup_variable
