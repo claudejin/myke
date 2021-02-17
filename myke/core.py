@@ -53,8 +53,13 @@ class Variable:
             shape = shape[0]
         return myke.functions.reshape(self, shape)
     
-    def transpose(self):
-        return myke.functions.transpose(self)
+    def transpose(self, *axes):
+        if len(axes) == 0:
+            axes = None
+        elif len(axes) == 1:
+            if isinstance(axes[0], (tuple, list)) or axes[0] is None:
+                axes = axes[0]
+        return myke.functions.transpose(self, axes)
     
     def sum(self, axis=None, keepdims=False):
         return myke.functions.sum(self, axis, keepdims)
@@ -266,6 +271,11 @@ def setup_variable():
     Variable.__rtruediv__ = rdiv
     Variable.__pow__ = pow
     Variable.__getitem__ = myke.functions.get_item
+
+    Variable.matmul = myke.functions.matmul
+    Variable.dot = myke.functions.matmul
+    Variable.max = myke.functions.max
+    Variable.min = myke.functions.min
 
 class Parameter(Variable):
     pass

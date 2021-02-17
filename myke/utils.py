@@ -89,15 +89,15 @@ def sum_to(x, shape):
 
 
 def reshape_sum_backward(gy, x_shape, axis, keepdims):
-    """Reshape gradient appropriately for dezero.functions.sum's backward.
+    """Reshape gradient appropriately for myke.functions.sum's backward.
     Args:
-        gy (dezero.Variable): Gradient variable from the output by backprop.
+        gy (myke.Variable): Gradient variable from the output by backprop.
         x_shape (tuple): Shape used at sum function's forward.
         axis (None or int or tuple of ints): Axis used at sum function's
             forward.
         keepdims (bool): Keepdims used at sum function's forward.
     Returns:
-        dezero.Variable: Gradient variable which is reshaped appropriately
+        myke.Variable: Gradient variable which is reshaped appropriately
     """
     ndim = len(x_shape)
     tupled_axis = axis
@@ -153,10 +153,39 @@ def get_file(url, file_name=None):
     print("Downloading: " + file_name)
     try:
         urllib.request.urlretrieve(url, file_path, show_progress)
-    except (Exception, KeyboardInterrupt) as e:
+    except (Exception, KeyboardInterrupt) as _:
         if os.path.exists(file_path):
             os.remove(file_path)
         raise
     print(" Done")
 
     return file_path
+
+
+def get_deconv_outsize(size, k, s, p):
+    return s * (size - 1) + k - 2 * p
+
+
+def get_conv_outsize(input_size, kernel_size, stride, pad):
+    return (input_size + pad * 2 - kernel_size) // stride + 1
+
+
+def pair(x):
+    if isinstance(x, int):
+        return (x, x)
+    elif isinstance(x, tuple):
+        assert len(x) == 2
+        return x
+    else:
+        raise ValueError
+
+def max_backward_shape(x, axis):
+    if axis is None:
+        axis = range(x.ndim)
+    elif isinstance(axis, int):
+        axis = (axis,)
+    else:
+        axis = axis
+
+    shape = [s if ax not in axis else 1 for ax, s in enumerate(x.shape)]
+    return shape
