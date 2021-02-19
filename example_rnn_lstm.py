@@ -16,7 +16,7 @@ train_set = SinCurve(train=True)
 dataloader = SeqDataLoader(train_set, batch_size=batch_size)
 seqlen = len(train_set)
 
-model = SimpleRNN(hidden_size, 1)
+model = SimpleRNN(hidden_size, 1, unit='lstm')
 optimizer = Adam().setup(model)
 
 for epoch in range(max_epoch):
